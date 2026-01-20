@@ -26,7 +26,6 @@
 - [Configuration](#-configuration)
 - [API Documentation](#-api-documentation)
 - [Project Structure](#-project-structure)
-- [Deployment](#-deployment)
 - [Contributing](#-contributing)
 - [License](#-license)
 
