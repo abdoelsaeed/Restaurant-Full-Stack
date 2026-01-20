@@ -4,6 +4,7 @@ import Footer from "./_components/Footer";
 import { Toaster } from "sonner";
 import HeaderWrapper from "./_components/HeaderWrapper";
 import { CartProvider } from "./context/cartContext";
+import  ProviderTheme from "@/app/theme/providerTheme";
 
 export const metadata: Metadata = {
   title: {
@@ -22,8 +23,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className="bg-third min-h-screen flex flex-col">
+
+        <ProviderTheme>
         <CartProvider >
           <HeaderWrapper />
           <main className="px-section">{children}</main>
@@ -34,7 +37,8 @@ export default function RootLayout({
           offset={150} // 👈 ارتفاع الهيدر
           richColors
           closeButton
-        />
+          />
+          </ProviderTheme>
       </body>
     </html>
   );

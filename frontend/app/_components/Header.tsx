@@ -11,7 +11,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCart } from "../context/cartContext";
+import { useTheme } from "next-themes";
 export default function Header({ user }: any) {
+  const { resolvedTheme } = useTheme();
   const { cartCount, refreshCartCount } = useCart();
   const [chosenPage, setChosenPage] = useState<string>("HOME");
   const router = useRouter();
@@ -28,8 +30,7 @@ export default function Header({ user }: any) {
   }, [user, refreshCartCount]);
 
   return (
-    <header className="sticky top-0 z-50 bg-pureWhite/95 backdrop-blur-sm shadow-md border-b border-primary/20">
-      <TopHeader user={user} />
+<header className={`${resolvedTheme==='dark'?"bg-dark-bg":"bg-pureWhite/95"}  sticky top-0 z-50 backdrop-blur-sm shadow-md border-b border-primary/20`}>      <TopHeader user={user} />
 
       <div className="px-4 sm:px-6 md:px-10 py-4">
         <div className="flex items-center justify-between gap-4">
@@ -44,7 +45,7 @@ export default function Header({ user }: any) {
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex flex-1 justify-center">
-            <ul className="flex gap-6 text-[18px] font-semibold text-secondary">
+            <ul className="flex gap-6 text-[18px] font-semibold text-secondary ">
               {["HOME", "MENU", "ORDER", "CONTACT", "ABOUT"].map((item) => (
                 <li key={item}>
                   <Link
@@ -52,7 +53,7 @@ export default function Header({ user }: any) {
                     onClick={() => setChosenPage(item)}
                     className={`hover:text-primary transition-colors 1 ${
                       chosenPage === item
-                        ? "text-primary border-b-2 border-primary"
+                        ? "text-primary border-b-[3.5] border-primary"
                         : "text-secondary"
                     }`}
                   >
@@ -94,10 +95,12 @@ export default function Header({ user }: any) {
                   {user.name}
                 </span>
                 {user.avatar && (
-                  <Avatar>
+                  <Link href='/profile'>
+                  <Avatar className="cursor-pointer">
                     <AvatarImage src={user.avatar} />
                     <AvatarFallback>CN</AvatarFallback>
                   </Avatar>
+                  </Link>
                 )}
                 {/* ممكن تضيف زر logout كمان */}
               </div>

@@ -4,6 +4,7 @@ export interface User {
   age?: string;
   phone_number: string;
   address?: string;
+  avatar?:string
 }
 export interface SignUpForm {
   name: string;

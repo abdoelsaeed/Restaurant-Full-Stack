@@ -1,6 +1,8 @@
 import ContactInfo from "../_components/ContactInfo";
 import Map from "../_components/Map";
 
+export const revalidate = 86400;
+
 export default function Page() {
   return (
     <div className="w-full">

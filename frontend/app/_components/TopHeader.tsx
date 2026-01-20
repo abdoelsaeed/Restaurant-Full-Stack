@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { User } from "../types/user";
 import { logoutService } from "../services/auth/auth.client";
 import { toast } from "sonner";
+import ThemeToggle from "./ThemeToggle";
 
 export default function TopHeader({ user }: { user: User }) {
   const router = useRouter();
@@ -21,7 +22,7 @@ export default function TopHeader({ user }: { user: User }) {
   };
 
   return (
-    <div className="py-2.5 bg-primary text-pureWhite w-screen px-4 sm:px-8 md:px-12 lg:px-15 flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4">
+    <div className="py-2.5 bg-primary text-pureWhite w-screen px-4 sm:px-8 md:px-12 lg:px-15 flex justify-between items-center gap-3 sm:gap-4">
       <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-8 md:gap-12 lg:gap-20">
         <p className="flex items-center gap-2 text-sm sm:text-base">
           <Clock4 size={16} className="sm:w-5 sm:h-5" />
@@ -32,19 +33,24 @@ export default function TopHeader({ user }: { user: User }) {
           <span className="whitespace-nowrap">+20 1147440577</span>
         </p>
       </div>
+      
+      {/* 👇 ضع ThemeToggle داخل flex container */}
+      <div className="flex items-center gap-3">
         {user ? (
           <button
             onClick={handleLogout}
-            className="mr-0 sm:mr-5 text-sm sm:text-base whitespace-nowrap hover:underline cursor-pointer flex justify-center items-center gap-1"
+            className="text-sm sm:text-base whitespace-nowrap hover:underline cursor-pointer flex justify-center items-center gap-1"
           >
             <LogOut size={16} />
             LOGOUT
           </button>
         ) : (
-          <p className="mr-0 sm:mr-5 text-sm sm:text-base whitespace-nowrap">
+          <p className="text-sm sm:text-base whitespace-nowrap">
             <Link href="/auth/signup">REGISTER</Link>
           </p>
         )}
+        <ThemeToggle />
+      </div>
     </div>
   );
 }

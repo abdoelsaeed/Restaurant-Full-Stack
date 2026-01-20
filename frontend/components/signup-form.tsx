@@ -1,8 +1,9 @@
+/* eslint-disable react-hooks/immutability */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { signupService } from "@/app/services/auth/auth.client";
 import { Button } from "@/components/ui/button";
-import { SignupForm } from "@/app/types/user";
+import { SignUpForm } from "@/app/types/user";
 
 import {
   Card,
@@ -21,15 +22,16 @@ import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { mergeGuestCart } from "@/app/utils/cartStorage";
+import Link from "next/link";
 
 export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<SignupForm>();
+  } = useForm<SignUpForm>();
 
-  const onSubmit = async (data: SignupForm) => {
+  const onSubmit = async (data: SignUpForm) => {
     try {
       await signupService(data);
       await mergeGuestCart();
@@ -118,7 +120,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                   Sign up with Google
                 </Button>
                 <FieldDescription className="px-6 text-center">
-                  Already have an account? <a href="#">Sign in</a>
+                  Already have an account? <Link href="/auth/login">Sign in</Link>
                 </FieldDescription>
               </Field>
             </FieldGroup>

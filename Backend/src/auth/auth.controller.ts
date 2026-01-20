@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import {
@@ -18,6 +19,7 @@ import { ForgetPasswordDto } from './dto/forgetPassword.dto';
 import { ResetPasswordDto } from './dto/resetPassword.dto';
 import { AuthGuard } from 'src/guard/Auth.guard';
 import { Roles } from 'src/guard/user.decorator';
+import { UpdateUserDto } from 'src/users/dto/update-user.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -74,5 +76,12 @@ export class AuthController {
       message: 'successfully Logout',
       status: 200,
     };
+  }
+
+  @Patch('update-profile')
+  @UseGuards(AuthGuard)
+  @Roles(['User', 'Admin'])
+  async updateProfile(@Body() updateData: UpdateUserDto, @Req() req: any) {
+    return this.authService.updateProfile(req.user._id, updateData);
   }
 }

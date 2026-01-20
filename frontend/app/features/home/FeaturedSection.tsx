@@ -8,6 +8,7 @@ import { Facebook, Instagram, Linkedin, Twitter } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 
 interface FeaturedItemsProps {
   featuredItems: HomeFood[];
@@ -65,7 +66,9 @@ export default function FeaturedSection({ featuredItems }: FeaturedItemsProps) {
 
           {/* Desktop price */}
           <div className="hidden lg:flex items-center gap-8 mt-16 xl:mt-20">
-            <OrderButton />
+            <Link href="/menu" className="cursor-pointer">
+              <OrderButton />
+            </Link>
 
             <div className="flex items-center gap-3">
               {currentItem.discount > 0 && (
@@ -148,9 +151,11 @@ export default function FeaturedSection({ featuredItems }: FeaturedItemsProps) {
 
       {/* ================= Mobile price ================= */}
       <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:hidden order-3 mt-4">
-        <Button className="bg-primary text-white w-full sm:w-[180px] h-[55px] text-xl rounded-xl">
-          Order Now
-        </Button>
+        <Link href="/menu">
+          <Button className="bg-primary text-white w-full sm:w-[180px] h-[55px] text-xl rounded-xl cursor-pointer">
+            Order Now
+          </Button>
+        </Link>
         <p className="text-xl font-semibold">${currentItem.finalPrice}</p>
       </div>
     </div>

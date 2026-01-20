@@ -1,22 +1,42 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-
+/* Dark mode variant */
 @custom-variant dark (&:is(.dark *));
 
 @theme {
+  /* Light mode colors */
   --color-primary: #CC3333;
   --color-secondary: #2A435D;
   --color-third: #FFF8EE;
   --color-hover: #F75555;
   --color-link: #4BFF3C;
   --color-pureWhite: #FFFFFF;
+  --color-dark-bg: #1a1a1a;
+  --color-dark-card: #2a2a2a;
+  --color-dark-text: #e5e5e5;
+  --color-dark-text-secondary: #a3a3a3;
+  --color-dark-border: #404040;
+  --color-dark-hover: #3a3a3a;
+
+  /* Dark mode overrides */
+  --color-primary-dark: #ff4444;
+  --color-secondary-dark: #4a5d75;
+  --color-third-dark: #2a2a2a;
+  --color-hover-dark: #ff6666;
+  --color-link-dark: #22c55e;
+
   --spacing-section: 3.75rem;
 }
 
-
-
-
+/* Dark mode color overrides */
+.dark {
+  --color-primary: var(--color-primary-dark);
+  --color-secondary: var(--color-secondary-dark);
+  --color-third: var(--color-third-dark);
+  --color-hover: var(--color-hover-dark);
+  --color-link: var(--color-link-dark);
+}
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
@@ -47,14 +67,14 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
+  --sidebar: var(--sidebar);
+  --sidebar-foreground: var(--sidebar-foreground);
+  --sidebar-primary: var(--sidebar-primary);
+  --sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --sidebar-accent: var(--sidebar-accent);
+  --sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --sidebar-border: var(--sidebar-border);
+  --sidebar-ring: var(--sidebar-ring);
 }
 
 :root {
@@ -92,6 +112,7 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
+/* Enhanced Dark Mode */
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
@@ -126,6 +147,84 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* Custom Dark Mode Classes */
+/* Custom Dark Mode Classes */
+.dark {
+  /* Body background */
+  body {
+    background-color: var(--color-dark-bg);
+    color: white; /* النصوص العادية بيضاء */
+  }
+
+  /* النصوص التي كانت حمراء تبقى حمراء */
+  .text-primary, .text-red-600, .text-red-700, .text-red-800 {
+    color: var(--color-primary) !important;
+  }
+
+  /* النصوص التي كانت باللون الثانوي تبقى بيضاء */
+  .text-secondary, .text-gray-600, .text-gray-700, .text-gray-800, .text-gray-900 {
+    color: white !important;
+  }
+
+  /* النصوص الخفيفة */
+  .text-gray-400, .text-gray-500 {
+    color: #e5e5e5 !important; /* لون فاتح قليلاً */
+  }
+
+  /* Links keep their colors */
+  a:not(.text-primary):not(.text-secondary) {
+    color: var(--color-link-dark) !important;
+  }
+
+  /* Card backgrounds */
+  .card, .bg-white {
+    background-color: var(--color-dark-card) !important;
+    border-color: var(--color-dark-border) !important;
+  }
+
+  /* Button styles - الأزرار الحمراء تبقى حمراء */
+  .bg-primary, button[class*="bg-red"] {
+    background-color: var(--color-primary) !important;
+    color: white !important;
+  }
+
+  .bg-primary:hover, button[class*="bg-red"]:hover {
+    background-color: var(--color-hover) !important;
+  }
+
+  /* Secondary buttons */
+  .btn-secondary, .bg-gray-100 {
+    background-color: var(--color-dark-hover) !important;
+    border-color: var(--color-dark-border) !important;
+    color: white !important;
+  }
+
+  .btn-secondary:hover, .bg-gray-100:hover {
+    background-color: var(--color-dark-card) !important;
+  }
+
+  /* Input styles */
+  input, textarea, select {
+    background-color: var(--color-dark-card) !important;
+    border-color: var(--color-dark-border) !important;
+    color: white !important;
+  }
+
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--color-primary) !important;
+  }
+
+  /* Input placeholder text */
+  ::placeholder {
+    color: #cccccc !important;
+  }
+
+  /* Navigation */
+  nav {
+    background-color: var(--color-dark-bg) !important;
+    border-color: var(--color-dark-border) !important;
+  }
+}
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -133,26 +232,31 @@
   body {
     @apply bg-background text-foreground;
   }
-  
+
   /* Hide scrollbar for Swiper */
   .swiper-wrapper::-webkit-scrollbar,
   .swiper::-webkit-scrollbar {
     display: none;
   }
-  
+
   .swiper-wrapper,
   .swiper {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  
+
   /* Hide scrollbar globally */
   *::-webkit-scrollbar {
     display: none;
   }
-  
+
   * {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+
+  /* Smooth transitions for theme changes */
+  * {
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
   }
 }

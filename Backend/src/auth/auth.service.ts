@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
@@ -22,6 +23,7 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { Model } from 'mongoose';
 import { ForgetPasswordDto } from './dto/forgetPassword.dto';
 import { htmlMessage } from '../utils/htmlMessage';
+import { UpdateUserDto } from 'src/users/dto/update-user.dto';
 @Injectable()
 export class AuthService {
   constructor(
@@ -199,5 +201,69 @@ export class AuthService {
       message: 'User found successfully',
       data: user,
     };
+  }
+  async updateProfile(userId: string, updateData: UpdateUserDto) {
+    try {
+      // Remove sensitive fields that shouldn't be updated through this endpoint
+      const { password, role, active, verification_Code, ...allowedUpdates } =
+        updateData;
+
+      const updatedUser = await this.usersModel.findByIdAndUpdate(
+        userId,
+        allowedUpdates,
+        {
+          new: true, // Return updated document
+          runValidators: true, // Run schema validators
+          select: '-password -__v', // Exclude password and version key
+        },
+      );
+
+      if (!updatedUser) {
+        throw new HttpException(
+          {
+            status: 404,
+            error: 'User not found',
+          },
+          404,
+        );
+      }
+
+      return {
+        status: 200,
+        message: 'Profile updated successfully',
+        data: updatedUser,
+      };
+    } catch (error) {
+      // Handle validation errors
+      if (error.name === 'ValidationError') {
+        throw new HttpException(
+          {
+            status: 400,
+            error: 'Validation failed',
+            details: Object.values(error.errors).map((err: any) => err.message),
+          },
+          400,
+        );
+      }
+
+      // Handle duplicate email error
+      if (error.code === 11000) {
+        throw new HttpException(
+          {
+            status: 409,
+            error: 'Email already exists',
+          },
+          409,
+        );
+      }
+
+      throw new HttpException(
+        {
+          status: 500,
+          error: 'Failed to update profile',
+        },
+        500,
+      );
+    }
   }
 }

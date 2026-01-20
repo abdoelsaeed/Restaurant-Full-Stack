@@ -1,5 +1,6 @@
 import OrderButton from "@/app/_components/OrderButton";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function HealthySection() {
   return (
@@ -82,7 +83,9 @@ export default function HealthySection() {
               </ul>
 
               <div className="text-center lg:text-left">
-                <OrderButton />
+                <Link href="/menu" className="cursor-pointer">
+                  <OrderButton />
+                </Link>
               </div>
             </div>
 

@@ -1,14 +1,12 @@
-"use server"
 import { cookies } from "next/headers";
 import { ApiResponse } from "../../types/api";
 import { Food, HomeData } from "../../types/food";
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
 
 export async function getHome(): Promise<HomeData> {
-  const res = await fetch(
-    `${BASE_URL}/food/home`,
-    { cache: "no-store" } // أو revalidate
-  );
+  const res = await fetch(`${BASE_URL}/food/home`, {
+    next: { revalidate: 300 }, // 5 دقائق
+  });
 
   if (!res.ok) {
     throw new Error("Failed to fetch home data");

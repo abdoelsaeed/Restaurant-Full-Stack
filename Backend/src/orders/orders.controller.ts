@@ -1,34 +1,46 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+/* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
+import { AuthGuard } from 'src/guard/Auth.guard';
+import { Roles } from 'src/guard/user.decorator';
 
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
-
+  @Roles(['User', 'Admin'])
+  @UseGuards(AuthGuard)
   @Post()
-  create(@Body() createOrderDto: CreateOrderDto) {
-    return this.ordersService.create(createOrderDto);
+  createCheckoutSession(
+    @Body() createOrderDto: CreateOrderDto,
+    @Req() req: any,
+  ) {
+    return this.ordersService.createCheckoutSession(
+      createOrderDto,
+      req.user?._id,
+    );
   }
 
-  @Get()
-  findAll() {
-    return this.ordersService.findAll();
+  @UseGuards(AuthGuard)
+  @Roles(['User', 'Admin'])
+  @Get('my-orders')
+  findMyOrders(@Req() req: any) {
+    return this.ordersService.findMyOrders(req.user?._id);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.ordersService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
-    return this.ordersService.update(+id, updateOrderDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.ordersService.remove(+id);
+  @UseGuards(AuthGuard)
+  @Roles(['User', 'Admin'])
+  @Get('statistics')
+  getMyStatistics(@Req() req: any) {
+    return this.ordersService.getMyStatistics(req.user?._id);
   }
 }

@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import {
   Controller,
@@ -53,8 +54,10 @@ export class CartController {
     return this.cartService.updateCartQuantity(req.user?._id, itemId, quantity);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.cartService.remove(+id);
+  @Roles(['User', 'Admin'])
+  @UseGuards(AuthGuard)
+  @Delete('item/:foodId')
+  remove(@Param('foodId') foodId: string, @Req() req: Request) {
+    return this.cartService.deleteItemFromCart(foodId, req.user?._id);
   }
 }

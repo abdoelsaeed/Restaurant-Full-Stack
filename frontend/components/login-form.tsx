@@ -20,6 +20,8 @@ import { loginService } from "@/app/services/auth/auth.client";
 import { toast } from "sonner";
 import { useState } from "react";
 import { mergeGuestCart } from "@/app/utils/cartStorage";
+import { Button } from "./ui/button";
+import Link from "next/link";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
@@ -62,7 +64,6 @@ export function LoginForm() {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </Field>
-
             <Field>
               <FieldLabel>Password</FieldLabel>
               <Input
@@ -72,13 +73,22 @@ export function LoginForm() {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </Field>
-
             <Field>
               <SubmitButton text={loading ? "Logging in..." : "Login"} />
             </Field>
-
+            <div className="flex ">
+              <Link href="/auth/forgot-password">
+                <Button
+                  type="button"
+                  variant="link"
+                  className="px-0 text-sm text-primary hover:underline"
+                >
+                  Forgot password?
+                </Button>
+              </Link>
+            </div>{" "}
             <FieldDescription className="text-center">
-              Don&apos;t have an account? <a href="#">Sign up</a>
+              Don&apos;t have an account? <Link href="/auth/signup">Sign up</Link>
             </FieldDescription>
           </FieldGroup>
         </form>

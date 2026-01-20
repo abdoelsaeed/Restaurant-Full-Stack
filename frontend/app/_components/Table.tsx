@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -15,10 +14,15 @@ import {
 } from "@/components/ui/table";
 import { CircleX } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { startTransition, useEffect, useOptimistic, useState } from "react";
 import QuantityButtons from "./QuantityButtons";
-import { updateCartQuantity } from "../services/cart/cart.client";
+import {
+  deleteCartItem,
+  updateCartQuantity,
+} from "../services/cart/cart.client";
 import { getGuestCart, updateGuestCartQuantity } from "../utils/cartStorage";
+import { useCart } from "../context/cartContext";
+import CheckoutPage from "./CheckoutPage";
 
 /* =============================
    Types
@@ -42,9 +46,16 @@ export function TableDemo({
   items: CartItem[];
   user: any | null;
 }) {
+  const { refreshCartCount } = useCart();
   const [displayItems, setDisplayItems] = useState<CartItem[]>([]);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
 
+  const [optimisticItems, optimisticDelete] = useOptimistic(
+    displayItems,
+    (curItems, foodId) => {
+      return curItems?.filter((item) => item._id !== foodId);
+    }
+  );
   /* =============================
      Init cart (User / Guest)
   ============================= */
@@ -87,23 +98,29 @@ export function TableDemo({
   /* =============================
      Handle Quantity Change
   ============================= */
+  // app/_components/Table.tsx
+
   const handleQuantityChange = (foodId: string, newQty: number) => {
     if (newQty < 1) return;
 
-    // UI update
+    // UI update first (optimistic)
     setQuantities((prev) => ({
       ...prev,
       [foodId]: newQty,
     }));
 
     if (!user) {
-      // 👤 Guest
+      // 👤 Guest - update localStorage
       updateGuestCartQuantity(foodId, newQty);
+      // Update cart count
+      refreshCartCount(user);
       return;
     }
 
-    // 👤 Logged in
-    updateCartQuantity(foodId, newQty);
+    // 👤 Logged in - update server
+    updateCartQuantity(foodId, newQty).then(() => {
+      refreshCartCount(user);
+    });
   };
 
   /* =============================
@@ -122,88 +139,118 @@ export function TableDemo({
     );
   }
 
+  const handleDeleteItem = async (itemId: string) => {
+    try {
+      startTransition(() => {
+        optimisticDelete(itemId);
+      });
+      setDisplayItems((prev) => prev.filter((item) => item._id !== itemId));
+      await deleteCartItem(itemId);
+      refreshCartCount(user);
+
+      // Update UI - remove item from state
+
+      // Optional: Show success message
+      console.log("Item deleted successfully");
+    } catch (error) {
+      console.error("Failed to delete item:", error);
+      // Optional: Show error message
+    } finally {
+    }
+  };
+
   return (
-    <Table className="bg-white rounded-xl overflow-hidden shadow-sm">
-      <TableCaption className="text-secondary/70">
-        Your shopping cart
-      </TableCaption>
+    <>
+      <Table className="bg-white rounded-xl overflow-hidden shadow-sm">
+        <TableCaption className="text-secondary/70">
+          Your shopping cart
+        </TableCaption>
 
-      {/* ===== Header ===== */}
-      <TableHeader>
-        <TableRow className="bg-primary hover:bg-primary">
-          <TableHead className="w-[110px] text-white">Image</TableHead>
-          <TableHead className="text-white px-5">Product</TableHead>
-          <TableHead className="text-white">Price</TableHead>
-          <TableHead className="text-white text-center">Quantity</TableHead>
-          <TableHead className="text-white text-right">Total</TableHead>
-          <TableHead className="text-white text-center">Action</TableHead>
-        </TableRow>
-      </TableHeader>
+        {/* ===== Header ===== */}
+        <TableHeader>
+          <TableRow className="bg-primary hover:bg-primary">
+            <TableHead className="w-[110px] text-white">Image</TableHead>
+            <TableHead className="text-white px-5">Product</TableHead>
+            <TableHead className="text-white">Price</TableHead>
+            <TableHead className="text-white text-center">Quantity</TableHead>
+            <TableHead className="text-white text-right">Total</TableHead>
+            <TableHead className="text-white text-center">Action</TableHead>
+          </TableRow>
+        </TableHeader>
 
-      {/* ===== Body ===== */}
-      <TableBody>
-        {displayItems.map(
-          ({ _id, foodId: { _id: foodID, name, finalPrice, image } }) => {
-            const qty = quantities[foodID] ?? 1;
+        {/* ===== Body ===== */}
+        <TableBody>
+          {optimisticItems.map(
+            ({ _id, foodId: { _id: foodID, name, finalPrice, image } }) => {
+              const qty = quantities[foodID] ?? 1;
 
-            return (
-              <TableRow
-                key={_id}
-                className="hover:bg-muted/50 transition-colors"
-              >
-                <TableCell className="relative h-20">
-                  <Image
-                    src={image}
-                    fill
-                    alt={name}
-                    className="object-cover rounded-lg"
-                  />
-                </TableCell>
+              return (
+                <TableRow
+                  key={_id}
+                  className="hover:bg-muted/50 transition-colors"
+                >
+                  <TableCell className="relative h-20">
+                    <Image
+                      src={image}
+                      fill
+                      alt={name}
+                      className="object-cover rounded-lg"
+                    />
+                  </TableCell>
 
-                <TableCell className="font-medium px-5">{name}</TableCell>
+                  <TableCell className="font-medium px-5">{name}</TableCell>
 
-                <TableCell className="text-secondary">${finalPrice}</TableCell>
+                  <TableCell className="text-secondary">
+                    ${finalPrice}
+                  </TableCell>
 
-                <TableCell className="text-center">
-                  <QuantityButtons
-                    value={qty}
-                    onChange={(newQty) => handleQuantityChange(foodID, newQty)}
-                  />
-                </TableCell>
+                  <TableCell className="text-center">
+                    <QuantityButtons
+                      value={qty}
+                      onChange={(newQty) =>
+                        handleQuantityChange(foodID, newQty)
+                      }
+                    />
+                  </TableCell>
 
-                <TableCell className="text-right font-medium">
-                  ${finalPrice * qty}
-                </TableCell>
+                  <TableCell className="text-right font-medium">
+                    ${finalPrice * qty}
+                  </TableCell>
 
-                <TableCell className="text-center">
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="text-red-500 hover:bg-red-50"
-                  >
-                    <CircleX size={20} />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            );
-          }
-        )}
-      </TableBody>
+                  <TableCell className="text-center">
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="text-red-500 hover:bg-red-50"
+                      onClick={() => handleDeleteItem(_id)}
+                    >
+                      <CircleX size={20} />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              );
+            }
+          )}
+        </TableBody>
 
-      {/* ===== Footer ===== */}
-      <TableFooter>
-        <TableRow className="bg-muted">
-          <TableCell colSpan={4} className="font-semibold">
-            Total
-          </TableCell>
+        {/* ===== Footer ===== */}
+        <TableFooter>
+          <TableRow className="bg-muted">
+            <TableCell colSpan={4} className="font-semibold">
+              Total
+            </TableCell>
 
-          <TableCell className="text-right text-lg font-bold">
-            ${totalPrice}
-          </TableCell>
+            <TableCell className="text-right text-lg font-bold">
+              ${totalPrice}
+            </TableCell>
 
-          <TableCell />
-        </TableRow>
-      </TableFooter>
-    </Table>
+            <TableCell />
+          </TableRow>
+        </TableFooter>
+      </Table>
+      <div className="text-center mt-5 mb-0 ">
+        <CheckoutPage user={user}/>
+      </div>
+    </>
   );
 }

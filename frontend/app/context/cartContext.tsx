@@ -20,7 +20,7 @@ export function CartProvider({
   user,
 }: {
   children: React.ReactNode;
-  user: any;
+  user?: any;
 }) {
   const [cartCount, setCartCount] = useState(0);
 

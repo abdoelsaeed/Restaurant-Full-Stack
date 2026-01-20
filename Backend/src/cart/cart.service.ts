@@ -1,4 +1,7 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import {
   BadRequestException,
   Inject,
@@ -96,6 +99,45 @@ export class CartService {
     };
   }
 
+  async deleteItemFromCart(itemId: string, userId: string) {
+    
+    const cart = await this.cartModel.findOne({
+      user: userId,
+      status: 'active',
+    });
+
+    if (!cart) {
+      throw new NotFoundException('Cart not found');
+    }
+
+    // 2️⃣ Find item in cart
+    const itemIndex = cart.items.findIndex(
+      (item) => item._id.toString() === itemId,
+    );
+
+    if (itemIndex === -1) {
+      throw new NotFoundException('Item not found in cart');
+    }
+
+    // 3️⃣ Remove item from array
+    const removedItem = cart.items.splice(itemIndex, 1)[0];
+
+    // 4️⃣ Recalculate total price
+    cart.totalPrice = cart.items.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0,
+    );
+
+    // 6️⃣ Save updated cart
+    await cart.save();
+
+    return {
+      success: true,
+      message: 'Item removed from cart successfully',
+      data: cart,
+    };
+  }
+
   async getMyCart(userId: string) {
     const cart = await this.cartModel
       .findOne({ user: userId, status: 'active' })
@@ -150,10 +192,6 @@ export class CartService {
     };
   }
 
-  // Backend/restaurant/src/cart/cart.service.ts
-
-  // Backend/restaurant/src/cart/cart.service.ts
-
   async updateCartQuantity(
     userId: string,
     foodId: string,
@@ -196,7 +234,4 @@ export class CartService {
     };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} cart`;
-  }
 }

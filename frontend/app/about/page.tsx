@@ -1,4 +1,3 @@
-import Image from "next/image";
 import {
   Award,
   ChefHat,
@@ -11,7 +10,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-
+export const revalidate = 86400;
 export default function Page() {
   return (
     <main className="w-full overflow-hidden">

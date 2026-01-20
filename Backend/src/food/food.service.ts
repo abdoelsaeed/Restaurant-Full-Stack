@@ -18,7 +18,7 @@ import { Wishlist } from 'src/wishlist/interface/wishlist.interface';
 export class FoodService {
   constructor(
     @Inject('FOOD_MODEL') private foodModel: Model<Food>,
-    @Inject('WISHLIST_MODEL') 
+    @Inject('WISHLIST_MODEL')
     private readonly wishlistModel: Model<Wishlist>,
   ) {}
   async createFood(createFoodDto: CreateFoodDto) {
@@ -111,7 +111,6 @@ export class FoodService {
       ...food,
       isWishlisted: wishlistSet.has(food._id.toString()),
     }));
-
 
     return {
       status: 200,

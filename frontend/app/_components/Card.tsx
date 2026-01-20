@@ -24,7 +24,7 @@ export default function Card({ item, user }: { item: Food; user: User }) {
     _id,
     isWishlisted = false,
   } = item;
-  const { cartCount, refreshCartCount, setCartCount } = useCart();
+  const { refreshCartCount, setCartCount } = useCart();
   const [isWishlist, setIsWishlist] = useState<boolean>(isWishlisted);
   const cartIconRef = useRef<any>(null);
 
@@ -55,7 +55,7 @@ export default function Card({ item, user }: { item: Food; user: User }) {
   async function handelWatched() {
     try {
       if (!user) {
-        router.push("/login");
+        router.push("/auth/login");
         return;
       }
       setIsWishlist((prev) => !prev);

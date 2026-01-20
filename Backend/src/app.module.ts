@@ -1,6 +1,5 @@
 /* eslint-disable prettier/prettier */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
@@ -11,10 +10,11 @@ import { FoodModule } from './food/food.module';
 import { WishlistModule } from './wishlist/wishlist.module';
 import { CartModule } from './cart/cart.module';
 import { OrdersModule } from './orders/orders.module';
+import { StripeModule } from './stripe/stripe.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
     MailerModule.forRoot({
       transport: {
         service: 'gmail',
@@ -32,6 +32,7 @@ import { OrdersModule } from './orders/orders.module';
       secret: process.env.JWT_SECRET || 'your-very-secure-secret-key',
       signOptions: { expiresIn: '6000000s' },
     }),
+    StripeModule,
     AuthModule,
     UsersModule,
     FoodModule,

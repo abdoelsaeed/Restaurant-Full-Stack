@@ -1,5 +1,5 @@
 "use client";
-import { SignupForm } from "../../types/user";
+import { SignUpForm } from "../../types/user";
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export async function loginService(email: string, password: string) {
@@ -17,7 +17,7 @@ export async function loginService(email: string, password: string) {
   return res.json();
 }
 
-export async function signupService(data: SignupForm) {
+export async function signupService(data: SignUpForm) {
   const res = await fetch(`${BASE_URL}/auth/signup`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
