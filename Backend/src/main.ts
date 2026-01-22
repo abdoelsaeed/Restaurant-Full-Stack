@@ -14,7 +14,7 @@ async function bootstrap() {
   app.use(cookieParser());
   app.setGlobalPrefix('api/v1');
   app.enableCors({
-    origin: ['http://localhost:3000',"https://restaurant-full-stack-production.up.railway.app"],
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
     credentials: true,
   });
   app.useGlobalPipes(
