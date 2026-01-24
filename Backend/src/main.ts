@@ -14,7 +14,7 @@ async function bootstrap() {
   app.use(cookieParser());
   app.setGlobalPrefix('api/v1');
   app.enableCors({
-    origin: 'http://localhost:3000',
+    origin: 'http://127.0.0.1:3000',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: [
