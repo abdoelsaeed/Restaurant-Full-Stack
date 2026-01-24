@@ -71,7 +71,7 @@ export class AuthService {
     }
   }
 
-  async login(signInDto: SignInDto, res: any) {
+  async login(signInDto: SignInDto, res: any, isHttps:any) {
     const user: any = await this.usersModel
       .findOne({ email: signInDto.email })
       .select('+password');
@@ -105,10 +105,11 @@ export class AuthService {
       expiresIn: '90d',
     });
 
+
     res.cookie('token', token, {
       httpOnly: true,
-      secure: false, // localhost
-      sameSite: 'lax', // ✅ الصح
+      secure: isHttps,                     // HTTPS بس
+      sameSite: isHttps ? 'none' : 'lax',  // Cross-site بس
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: '/',
     });
