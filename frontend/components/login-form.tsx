@@ -34,6 +34,7 @@ export function LoginForm() {
 
     try {
       await loginService(email, password);
+      await new Promise((r) => setTimeout(r, 300));
       await mergeGuestCart();
       window.location.href = "/?login=success";
     } catch (err: any) {
