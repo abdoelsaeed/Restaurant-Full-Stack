@@ -9,7 +9,7 @@ export async function loginService(email: string, password: string) {
     credentials: "include",
     body: JSON.stringify({ email, password }),
   });
-
+  console.log(BASE_URL);
   if (!res.ok) {
     throw new Error("Invalid email or password");
   }
