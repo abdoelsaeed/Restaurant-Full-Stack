@@ -100,6 +100,7 @@ This is a comprehensive full-stack restaurant application that provides a comple
 - **Code Splitting** - Dynamic imports for optimal bundle size
 - **API Caching** - Strategic caching of static data
 
+### Unit Test using JEST
 ---
 
 ## 🛠 Tech Stack
@@ -122,6 +123,7 @@ This is a comprehensive full-stack restaurant application that provides a comple
 | **Lottie React** | 2.4.1 | Animation rendering |
 | **Swiper** | 12.0.3 | Touch slider |
 | **Lucide React** | 0.562.0 | Icon library |
+| **JEST |
 
 ### Backend
 
@@ -138,6 +140,20 @@ This is a comprehensive full-stack restaurant application that provides a comple
 | **@nestjs-modules/mailer** | 2.0.2 | NestJS mail module |
 | **Class Validator** | 0.14.3 | DTO validation |
 | **Cookie Parser** | 1.4.7 | Cookie management |
+---
+
+## 🧪 Testing
+
+The backend of this application is thoroughly tested using Jest.
+
+- **Unit Tests:** Focus on individual components (services, controllers) in isolation, often using mocking for dependencies.
+- **Integration Tests:** Verify the interaction between different modules and external services.
+- **Tools:**
+  - **Jest:** Primary testing framework.
+  - **Supertest:** (إذا كنت تستخدمه لاختبار الـ HTTP endpoints) For HTTP integration testing.
+  - **`@nestjs/testing`:** NestJS testing utilities.
+
+---
 
 ## 🏗 Architecture
 
