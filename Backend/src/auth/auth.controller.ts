@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
@@ -43,8 +44,10 @@ export class AuthController {
   }
 
   @Post('login')
-  login(@Body() signInDto: SignInDto, @Res({ passthrough: true }) res: any) {
-    return this.authService.login(signInDto, res);
+  login(@Body() signInDto: SignInDto, @Res({ passthrough: true }) res: any,@Req()req:any) {
+    const isHttps = req.secure || req.headers['x-forwarded-proto'] === 'https';
+
+    return this.authService.login(signInDto, res, isHttps);
   }
 
   @Patch('forgetpassword')
@@ -68,8 +71,8 @@ export class AuthController {
   logout(@Res({ passthrough: true }) res: any) {
     res.clearCookie('token', {
       httpOnly: true,
-      secure: false, // نفس القيمة اللي في login/signup
-      sameSite: 'lax', // ✅ لازم نفس القيمة اللي في login/signup
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       path: '/',
     });
     return {
