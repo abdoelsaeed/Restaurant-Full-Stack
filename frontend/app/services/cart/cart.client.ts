@@ -6,7 +6,7 @@ export async function addToCartServices(
   foodId: string,
   quantity?: number
 ): Promise<Cart> {
-  const res = await fetch(`${BASE_URL}/cart`, {
+  const res = await fetch(`/api/cart`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -24,7 +24,7 @@ export async function updateCartQuantity(
   foodId: string,
   quantity: number
 ): Promise<Cart> {
-  const res = await fetch(`${BASE_URL}/cart/item/${foodId}`, {
+  const res = await fetch(`/api/cart/item/${foodId}`, {
     // ✅ foodId
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
@@ -45,7 +45,7 @@ export async function countMyCart(): Promise<{
   count: number;
   hasItems: boolean;
 }> {
-  const res = await fetch(`${BASE_URL}/cart/count`, {
+  const res = await fetch(`/api/cart/count`, {
     credentials: "include",
   });
 
@@ -59,7 +59,7 @@ export async function countMyCart(): Promise<{
 }
 
 export async function deleteCartItem(itemId: string): Promise<Cart | null> {
-  const res = await fetch(`${BASE_URL}/cart/item/${itemId}`, {
+  const res = await fetch(`/api/cart/item/${itemId}`, {
     method: "DELETE",
     credentials: "include",
   });
@@ -74,7 +74,7 @@ export async function deleteCartItem(itemId: string): Promise<Cart | null> {
 }
 
 export async function createCheckoutSession() {
-  const res = await fetch(`${BASE_URL}/orders`, {
+  const res = await fetch(`/api/orders`, {
     method: "POST",
     credentials: "include",
   });

@@ -4,7 +4,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
 
 
 export async function addToWishList(id: string) {
-  const res = await fetch(`${BASE_URL}/wishlist/${id}`, {
+  const res = await fetch(`/api/wishlist/${id}`, {
     method: "POST",
     credentials: "include",
     cache: "no-store",
