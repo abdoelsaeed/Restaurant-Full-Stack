@@ -1,6 +1,5 @@
 "use client";
 import { SignUpForm } from "../../types/user";
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export async function loginService(email: string, password: string) {
   const res = await fetch("/api/auth/login", {
@@ -32,12 +31,13 @@ export async function signupService(data: SignUpForm) {
 }
 
 export async function logoutService() {
-  const res = await fetch(`${BASE_URL}/auth/logout`, {
+  const res = await fetch("/api/auth/logout", {
     method: "POST",
-    credentials: "include",
   });
+
   if (!res.ok) {
-    throw new Error("Some thing wrong");
+    throw new Error("Something went wrong");
   }
+
   return res.json();
 }
