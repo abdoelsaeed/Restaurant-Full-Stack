@@ -3,21 +3,22 @@ import { SignUpForm } from "../../types/user";
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export async function loginService(email: string, password: string) {
-  const res = await fetch(`${BASE_URL}/auth/login`, {
+  const res = await fetch("/api/auth/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    credentials: "include",
     body: JSON.stringify({ email, password }),
   });
+
   if (!res.ok) {
-    throw new Error("Invalid email or password");
+    const error = await res.json();
+    throw new Error(error?.error || "Invalid email or password");
   }
 
   return res.json();
 }
 
 export async function signupService(data: SignUpForm) {
-  const res = await fetch(`${BASE_URL}/auth/signup`, {
+  const res = await fetch(`/api/auth/signup`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
