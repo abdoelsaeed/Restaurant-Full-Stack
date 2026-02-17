@@ -14,9 +14,11 @@ async function bootstrap() {
   app.use(cookieParser());
   app.setGlobalPrefix('api/v1');
   app.enableCors({
-    origin: 'http://localhost:3000',
+    origin: process.env.FRONTEND_URL,
     credentials: true,
   });
+
+  //fix the cors problems
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

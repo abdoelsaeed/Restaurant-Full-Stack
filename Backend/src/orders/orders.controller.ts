@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import {
@@ -8,6 +9,7 @@ import {
   Body,
   Req,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -35,6 +37,21 @@ export class OrdersController {
   @Get('my-orders')
   findMyOrders(@Req() req: any) {
     return this.ordersService.findMyOrders(req.user?._id);
+  }
+
+  @UseGuards(AuthGuard)
+  @Roles(['Admin'])
+  @Get('all')
+  findAllOrders(
+    @Query('status') status?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.ordersService.findAllOrdersWithFilter({
+      status: status as any,
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+    });
   }
 
   @UseGuards(AuthGuard)

@@ -13,6 +13,7 @@ import { OrdersModule } from './orders/orders.module';
 import { StripeModule } from './stripe/stripe.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { APP_GUARD } from '@nestjs/core';
     WishlistModule,
     CartModule,
     OrdersModule,
+    DashboardModule,
   ],
   controllers: [],
   providers: [

@@ -12,13 +12,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
 import { Model } from 'mongoose';
 import { Order } from './interfaces/order.interface';
-import { StripeService } from 'src/stripe/stripe.service';
-import { Cart } from 'src/cart/interfaces/cart.interface';
-import { Users } from 'src/users/interfaces/user.interface';
-import { UpdateUserDto } from 'src/users/dto/update-user.dto';
+import { StripeService } from '../stripe/stripe.service';
+import { Cart } from '../cart/interfaces/cart.interface';
+import { Users } from '../users/interfaces/user.interface';
+
 
 @Injectable()
 export class OrdersService {
@@ -156,6 +155,79 @@ export class OrdersService {
     }
   }
 
+  async findAllOrdersWithFilter(params: {
+    status?: Order['status'];
+    page?: number;
+    limit?: number;
+  }) {
+    try {
+      const page = Math.max(1, Number(params.page) || 1);
+      const limit = Math.min(100, Math.max(1, Number(params.limit) || 20));
+
+      const query: { status?: Order['status'] } = {};
+      if (params.status) {
+        const allowedStatuses: Order['status'][] = [
+          'pending',
+          'paid',
+          'failed',
+          'cancelled',
+          'refunded',
+        ];
+        if (!allowedStatuses.includes(params.status)) {
+          throw new BadRequestException(
+            `Invalid status. Allowed: ${allowedStatuses.join(', ')}`,
+          );
+        }
+        query.status = params.status;
+      }
+
+      const [orders, total] = await Promise.all([
+        this.orderModel
+          .find(query)
+          .populate({
+            path: 'items.productId',
+            select: 'name image finalPrice',
+          })
+          .sort({ createdAt: -1 })
+          .skip((page - 1) * limit)
+          .limit(limit),
+        this.orderModel.countDocuments(query),
+      ]);
+
+      const transformedOrders = orders.map((order) =>
+        this.transformOrder(order),
+      );
+
+      return {
+        success: true,
+        message: 'Orders retrieved successfully',
+        data: transformedOrders,
+        meta: {
+          total,
+          page,
+          limit,
+          pages: Math.ceil(total / limit) || 1,
+          hasNextPage: page * limit < total,
+          hasPrevPage: page > 1,
+        },
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Failed to retrieve orders',
+        data: [],
+        meta: {
+          total: 0,
+          page: 1,
+          limit: 20,
+          pages: 1,
+          hasNextPage: false,
+          hasPrevPage: false,
+        },
+      };
+    }
+  }
+
   async updateOrderStatus(orderId: string, status: Order['status']) {
     const order = await this.orderModel.findById(orderId);
 
@@ -163,7 +235,6 @@ export class OrdersService {
       throw new NotFoundException(`Order ${orderId} not found`);
     }
 
-    // ✅ Idempotency (مهم جدًا)
     if (order.status === status) {
       return {
         success: true,
@@ -172,7 +243,6 @@ export class OrdersService {
       };
     }
 
-    // ❌ منع transitions غير منطقية
     const invalidTransitions: Record<string, string[]> = {
       paid: ['pending'],
       refunded: ['paid'],
@@ -253,5 +323,24 @@ export class OrdersService {
         },
       };
     }
+  }
+
+  private transformOrder(order: Order) {
+    return {
+      _id: order._id,
+      email: order.email,
+      amount: order.amount,
+      currency: order.currency,
+      status: order.status,
+      items: order.items.map((item) => ({
+        productId: item.productId,
+        productName: item.productName,
+        price: item.price,
+        quantity: item.quantity,
+        image: (item.productId as any)?.image || null,
+      })),
+      createdAt: order.createdAt,
+      updatedAt: order.updatedAt,
+    };
   }
 }
