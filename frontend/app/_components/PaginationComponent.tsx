@@ -11,18 +11,31 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 type metaProps = {
   meta: { total: number; page: number; limit?: number; pages: number };
+  pageName: string;
+  activeClassName?: string;
 };
-export function PaginationComponent({ meta }: metaProps) {
+export function PaginationComponent({ meta, pageName, activeClassName }: metaProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const currentPage = Number(searchParams.get("page")) || 1;
   function goToPage(page: number) {
     const params = new URLSearchParams(searchParams.toString());
     params.set("page", page.toString());
-    router.push(`/menu?${params.toString()}`);
+    const query = params.toString();
+    router.push(`/${pageName}${query ? `?${query}` : ""}`);
   }
+
+  function getPageHref(page: number) {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", page.toString());
+    const query = params.toString();
+    return `/${pageName}${query ? `?${query}` : ""}`;
+  }
+
+  const totalPages = meta.pages || 1;
+  const activeClasses = activeClassName ?? "bg-neutral-900 text-white";
   return (
-    <Pagination className="mt-section ">
+    <Pagination className="mt-10 mb-5">
       <PaginationContent>
         <PaginationItem>
           <PaginationPrevious
@@ -35,14 +48,34 @@ export function PaginationComponent({ meta }: metaProps) {
             }
           />
         </PaginationItem>
-        {Array.from({ length: meta.pages }).map((_, i) => {
+        {Array.from({ length: totalPages }).map((_, i) => {
           const page = i + 1;
+          const showEllipsis =
+            totalPages > 7 &&
+            page !== 1 &&
+            page !== totalPages &&
+            Math.abs(page - currentPage) > 1;
+
+          if (showEllipsis) {
+            if (page === 2 || page === totalPages - 1) {
+              return (
+                <PaginationItem key={`ellipsis-${page}`}>
+                  <PaginationEllipsis />
+                </PaginationItem>
+              );
+            }
+            return null;
+          }
 
           return (
             <PaginationItem key={page}>
               <PaginationLink
-                href={`?page=${page}`}
-                className={`${page === currentPage?'bg-primary text-pureWhite':""}`}
+                href={getPageHref(page)}
+                onClick={(event) => {
+                  event.preventDefault();
+                  goToPage(page);
+                }}
+                className={page === currentPage ? activeClasses : ""}
               >
                 {page}
               </PaginationLink>
@@ -50,16 +83,13 @@ export function PaginationComponent({ meta }: metaProps) {
           );
         })}
         <PaginationItem>
-          <PaginationEllipsis />
-        </PaginationItem>
-        <PaginationItem>
           <PaginationNext
             onClick={() => {
-              if (currentPage === meta.pages) return;
+              if (currentPage === totalPages) return;
               goToPage(currentPage + 1);
             }}
             className={
-              currentPage === meta.pages ? "pointer-events-none opacity-50" : ""
+              currentPage === totalPages ? "pointer-events-none opacity-50" : ""
             }
           />
         </PaginationItem>

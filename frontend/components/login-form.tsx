@@ -33,9 +33,16 @@ export function LoginForm() {
     setLoading(true);
 
     try {
-      await loginService(email, password);
+      const res = await loginService(email, password);
+      const role = res?.data?.role;
+
+      await new Promise((r) => setTimeout(r, 300));
       await mergeGuestCart();
-      window.location.href = "/?login=success";
+      if (role === "Admin") {
+        window.location.href = "/dashboard";
+      } else {
+        window.location.href = "/?login=success";
+      }
     } catch (err: any) {
       toast.error(err.message || "Login failed");
     } finally {
