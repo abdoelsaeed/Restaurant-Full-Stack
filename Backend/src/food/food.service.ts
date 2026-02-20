@@ -20,7 +20,7 @@ export class FoodService {
     @Inject('FOOD_MODEL') private foodModel: Model<Food>,
     @Inject('WISHLIST_MODEL')
     private readonly wishlistModel: Model<Wishlist>,
-  ) {}
+  ) { }
   async createFood(createFoodDto: CreateFoodDto) {
     try {
       const newFood = await this.foodModel.create(createFoodDto);
@@ -69,9 +69,10 @@ export class FoodService {
       order = 'desc',
       page = 1,
       q,
+      isFeatured,
       limit = 10,
     } = query;
-    const filter: any = { active: true };
+    const filter: any = { active: query.active || true };
     if (type) {
       filter.type = type;
     }
@@ -79,6 +80,7 @@ export class FoodService {
     const sort: any = {
       [sortBy]: order === 'asc' ? 1 : -1,
     };
+    if(isFeatured) filter.isFeatured = isFeatured;
     const skip = (page - 1) * limit;
     if (q) filter.name = { $regex: q, $options: 'i' };
     const [foods, total] = await Promise.all([
@@ -134,8 +136,9 @@ export class FoodService {
 
     return food;
   }
-
-  remove(id: number) {
-    return `This action removes a #${id} food`;
+  async remove(id: string) {
+    const product = await this.foodModel.findByIdAndDelete(id);
+    if (!product) throw new NotFoundException('Not found food with this id');
+    return;
   }
 }

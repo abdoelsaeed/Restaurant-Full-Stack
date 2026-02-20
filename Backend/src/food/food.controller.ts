@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import {
@@ -11,17 +12,17 @@ import {
   UseGuards,
   Query,
   Req,
+  HttpCode,
 } from '@nestjs/common';
 import { FoodService } from './food.service';
 import { CreateFoodDto } from './dto/create-food.dto';
-import { AuthGuard } from 'src/guard/Auth.guard';
 import { Roles } from 'src/guard/user.decorator';
 import { FindFoodsQueryDto } from './dto/find-foods.query.dto';
 import { OptionalAuthGuard } from 'src/guard/OptionalAuthGuard.guard';
 
 @Controller('food')
 export class FoodController {
-  constructor(private readonly foodService: FoodService) {}
+  constructor(private readonly foodService: FoodService) { }
 
   @Roles(['User', 'Admin'])
   @UseGuards(OptionalAuthGuard)
@@ -46,8 +47,9 @@ export class FoodController {
     return this.foodService.findOne(id);
   }
 
+  @HttpCode(204)
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.foodService.remove(+id);
+    return this.foodService.remove(id);
   }
 }

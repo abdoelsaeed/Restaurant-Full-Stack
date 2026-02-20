@@ -44,4 +44,5 @@ export class CreateFoodDto {
   @IsString({ message: 'image must be a string' })
   @IsUrl({}, { message: 'image must be a valid url' })
   image: string;
+  
 }

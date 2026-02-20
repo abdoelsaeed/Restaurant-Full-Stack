@@ -35,4 +35,10 @@ export class FindFoodsQueryDto {
 
   @IsOptional()
   q: string;
+
+  @IsOptional()
+  active?: string | boolean;
+  
+  @IsOptional()
+  isFeatured?: string | boolean;
 }

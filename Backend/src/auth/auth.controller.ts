@@ -46,7 +46,7 @@ export class AuthController {
   @Post('login')
   login(@Body() signInDto: SignInDto, @Res({ passthrough: true }) res: any,@Req()req:any) {
     const isHttps = req.secure || req.headers['x-forwarded-proto'] === 'https';
-
+    
     return this.authService.login(signInDto, res, isHttps);
   }
 
