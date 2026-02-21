@@ -1,7 +1,6 @@
 "use client";
 import { ApiResponse } from "./../../types/api";
 import { Cart } from "../../types/cart";
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
 export async function addToCartServices(
   foodId: string,
   quantity?: number

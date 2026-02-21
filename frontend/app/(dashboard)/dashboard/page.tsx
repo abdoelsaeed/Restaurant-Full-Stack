@@ -23,7 +23,7 @@ export default async function Page({ searchParams }: PageProps) {
     <div className="px-5 py-3">
       <div>
         <OrderList/>
-        <div className="grid [grid-template-columns:repeat(auto-fill,minmax(270px,1fr))]">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(270px,1fr))]">
           {data.map((order:any,i:number) => (
             <CardOrder
             key={order._id}

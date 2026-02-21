@@ -35,7 +35,7 @@ export function PaginationComponent({ meta, pageName, activeClassName }: metaPro
   const totalPages = meta.pages || 1;
   const activeClasses = activeClassName ?? "bg-neutral-900 text-white";
   return (
-    <Pagination className="mt-10 mb-5">
+    <Pagination className="mt-10 mb-5 w-fit">
       <PaginationContent>
         <PaginationItem>
           <PaginationPrevious
