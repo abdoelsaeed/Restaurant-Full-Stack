@@ -1,9 +1,12 @@
+/* eslint-disable react-hooks/refs */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { Food } from "@/app/types/food";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useForm } from "react-hook-form";
+import { Textarea } from "@/components/ui/textarea";
+import { useForm, Controller } from "react-hook-form";
 import { Label } from "@/components/ui/label";
 import {
   Sheet,
@@ -15,9 +18,17 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { useEffect } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useEffect, useRef, useState } from "react";
 import { updateFood } from "@/app/actions/dashboard.actions";
 import { toast } from "sonner";
+import { X } from "lucide-react";
 
 export function EditProductSheet({
   product,
@@ -25,110 +36,331 @@ export function EditProductSheet({
   children: React.ReactNode;
   product: Food;
 }) {
+  const sheetCloseRef = useRef<HTMLButtonElement>(null);
+  const [ingredients, setIngredients] = useState<string[]>(
+    product.ingredients || [],
+  );
+  const [mealTimes, setMealTimes] = useState<string[]>(product.mealTimes || []);
+  const [ingredientInput, setIngredientInput] = useState("");
+
   const {
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors },
   } = useForm<Food>({
     defaultValues: product,
   });
 
+  function addIngredient() {
+    if (ingredientInput.trim()) {
+      setIngredients([...ingredients, ingredientInput.trim()]);
+      setIngredientInput("");
+    }
+  }
+
+  function removeIngredient(index: number) {
+    setIngredients(ingredients.filter((_, i) => i !== index));
+  }
+
+  function toggleMealTime(time: string) {
+    setMealTimes((prev) =>
+      prev.includes(time) ? prev.filter((t) => t !== time) : [...prev, time],
+    );
+  }
+
   async function onSubmit(data: Food) {
-    const result: any = await updateFood(product._id, data);
-    
-    if (result.success) {
-      toast("Product updated successfully 🎉");
-    } else {
-      if (result.message) {
-        console.log(result?.message);
+    try {
+      if (ingredients.length === 0) {
+        toast.error("Please add at least one ingredient");
+        return;
       }
+
+      if (mealTimes.length === 0) {
+        toast.error("Please select at least one meal time");
+        return;
+      }
+
+      const formData = {
+        ...data,
+        ingredients,
+        mealTimes,
+      };
+
+      const result: any = await updateFood(product._id, formData);
+
+      if (result.success) {
+        toast.success("Product updated successfully 🎉");
+        sheetCloseRef.current?.click();
+      } else {
+        toast.error(result.message || "Failed to update product");
+      }
+    } catch (error) {
+      console.error("Error updating product:", error);
+      toast.error("Error updating product");
     }
   }
 
   useEffect(() => {
     reset(product);
+    setIngredients(product.ingredients || []);
+    setMealTimes(product.mealTimes || []);
   }, [product, reset]);
 
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button type="button" variant="outline">
+        <Button
+          type="button"
+          className="bg-[#fc5900] hover:bg-[#e04a00] text-white font-semibold transition-all duration-300"
+        >
           Edit
         </Button>
       </SheetTrigger>
-      <SheetContent>
-        <SheetHeader>
-          <SheetTitle>Edit Product</SheetTitle>
-          <SheetDescription>
-            Make changes to product here. Click save when you&apos;re done.
+      <SheetContent className="overflow-y-auto p-2 bg-[#23272d] text-white w-full sm:max-w-[500px]">
+        <SheetHeader className="border-b border-gray-600 pb-4">
+          <SheetTitle className="text-white text-2xl font-bold">
+            Edit Product
+          </SheetTitle>
+          <SheetDescription className="text-gray-400 text-sm">
+            Make changes to your product. Click save when you&apos;re done.
           </SheetDescription>
         </SheetHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="grid flex-1 auto-rows-min gap-6 px-4">
-            <div className="grid gap-3">
-              <Label htmlFor="name">Name</Label>
-              <Input id="name" {...register("name")} />
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 py-6">
+          <div className="space-y-4">
+            {/* Name */}
+            <div className="space-y-2">
+              <Label htmlFor="name" className="text-white font-semibold">
+                Name
+              </Label>
+              <Input
+                placeholder="Enter product name"
+                id="name"
+                className="bg-[#2d3139] border-gray-600 text-white placeholder:text-gray-500 focus:border-[#fc5900] focus:ring-[#fc5900]"
+                {...register("name", { required: "Name is required" })}
+              />
+              {errors.name && (
+                <span className="text-red-500 text-sm">
+                  {errors.name.message}
+                </span>
+              )}
             </div>
 
-            <div className="grid gap-3">
-              <Label htmlFor="price">price</Label>
-              <Input
-                id="price"
-                type="number"
-                {...register("price", { valueAsNumber: true })}
+            {/* Description */}
+            <div className="space-y-2">
+              <Label htmlFor="description" className="text-white font-semibold">
+                Description
+              </Label>
+              <Textarea
+                id="description"
+                className="bg-[#2d3139] border-gray-600 text-white placeholder:text-gray-500 focus:border-[#fc5900] focus:ring-[#fc5900] resize-none min-h-[100px]"
+                {...register("description")}
+                placeholder="Describe your product..."
               />
             </div>
 
-            <div className="grid gap-3">
-              <Label htmlFor="discount">discount</Label>
-              <Input
-                id="discount"
-                type="number"
-                {...register("discount", { valueAsNumber: true })}
-              />
-            </div>
-            <div className="grid gap-3">
-              <Label htmlFor="finalPrice">Final Price</Label>
-              <Input id="finalPrice" disabled {...register("finalPrice")} />
-            </div>
-            <div className="grid gap-3">
-              <Label htmlFor="type">type</Label>
-              <Input id="type" {...register("type")} />
-            </div>
+            {/* Price & Discount */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center gap-2">
+              <div className="space-y-2">
+                <Label htmlFor="price" className="text-white font-semibold">
+                  Price
+                </Label>
+                <Input
+                  className="bg-[#2d3139] border-gray-600 text-white placeholder:text-gray-500 focus:border-[#fc5900] focus:ring-[#fc5900]"
+                  id="price"
+                  type="number"
+                  {...register("price", {
+                    valueAsNumber: true,
+                    required: "Price is required",
+                  })}
+                />
+                {errors.price && (
+                  <span className="text-red-500 text-sm">
+                    {errors.price.message}
+                  </span>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="discount" className="text-white font-semibold">
+                  Discount
+                </Label>
+                <Input
+                  className="bg-[#2d3139] border-gray-600 text-white placeholder:text-gray-500 focus:border-[#fc5900] focus:ring-[#fc5900]"
+                  id="discount"
+                  type="number"
+                  {...register("discount", { valueAsNumber: true })}
+                />
+              </div>
+            </div>
+
+            {/* Final Price */}
+            <div className="space-y-2">
+              <Label htmlFor="finalPrice" className="text-white font-semibold">
+                Final Price
+              </Label>
+              <Input
+                className="bg-[#2d3139] border-gray-600 text-white cursor-not-allowed opacity-70"
+                id="finalPrice"
+                disabled
+                {...register("finalPrice")}
+              />
+            </div>
+
+            {/* Type */}
+            <div className="space-y-2">
+              <Label htmlFor="type" className="text-white font-semibold">
+                Type
+              </Label>
+              <Controller
+                name="type"
+                control={control}
+                rules={{ required: "Type is required" }}
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger
+                      id="type"
+                      className="bg-[#2d3139] border-gray-600 text-white"
+                    >
+                      <SelectValue placeholder="Select a type" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#2d3139] border-gray-600 text-white">
+                      <SelectItem value="burger">Burger</SelectItem>
+                      <SelectItem value="pizza">Pizza</SelectItem>
+                      <SelectItem value="salad">Salad</SelectItem>
+                      <SelectItem value="dessert">Dessert</SelectItem>
+                      <SelectItem value="beef">Beef</SelectItem>
+                      <SelectItem value="chicken">Chicken</SelectItem>
+                      <SelectItem value="meal">Meal</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.type && (
+                <span className="text-red-500 text-sm">
+                  {errors.type.message}
+                </span>
+              )}
+            </div>
+
+            {/* Meal Times */}
+            <div className="space-y-2">
+              <Label className="text-white font-semibold">Meal Times</Label>
+              <div className="flex flex-wrap gap-2">
+                {["breakfast", "lunch", "dinner"].map((time) => (
+                  <Button
+                    key={time}
+                    type="button"
+                    onClick={() => toggleMealTime(time)}
+                    className={`transition-all duration-300 ${
+                      mealTimes.includes(time)
+                        ? "bg-[#fc5900] hover:bg-[#e04a00] text-white"
+                        : "bg-[#2d3139] hover:bg-[#383d47] text-gray-300 border border-gray-600"
+                    }`}
+                  >
+                    {time.charAt(0).toUpperCase() + time.slice(1)}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {/* Ingredients */}
+            <div className="space-y-2">
+              <Label htmlFor="ingredient" className="text-white font-semibold">
+                Ingredients
+              </Label>
+              <div className="flex gap-2">
+                <Input
+                  id="ingredient"
+                  value={ingredientInput}
+                  onChange={(e) => setIngredientInput(e.target.value)}
+                  placeholder="Add ingredient"
+                  className="bg-[#2d3139] border-gray-600 text-white placeholder:text-gray-500 focus:border-[#fc5900] focus:ring-[#fc5900]"
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      addIngredient();
+                    }
+                  }}
+                />
+                <Button
+                  type="button"
+                  onClick={addIngredient}
+                  className="bg-[#fc5900] hover:bg-[#e04a00] text-white font-semibold transition-all duration-300"
+                >
+                  Add
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2 mt-3">
+                {ingredients.map((ing, index) => (
+                  <div
+                    key={index}
+                    className="bg-[#fc5900] text-white px-4 py-2 rounded-full flex items-center gap-2 font-medium text-sm"
+                  >
+                    {ing}
+                    <button
+                      type="button"
+                      onClick={() => removeIngredient(index)}
+                      className="hover:bg-[#e04a00] rounded-full p-1 transition-all duration-200"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Checkboxes */}
+            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-600">
+              <div className="flex items-center gap-3">
                 <Input
                   id="active"
                   type="checkbox"
-                  className="w-4 h-4"
+                  className="w-5 h-5 cursor-pointer accent-[#fc5900]"
                   {...register("active")}
                 />
-                <Label htmlFor="active" className="cursor-pointer">
+                <Label
+                  htmlFor="active"
+                  className="cursor-pointer font-semibold"
+                >
                   Active
                 </Label>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <Input
                   id="isFeatured"
                   type="checkbox"
-                  className="w-4 h-4"
+                  className="w-5 h-5 cursor-pointer accent-[#fc5900]"
                   {...register("isFeatured")}
                 />
-                <Label htmlFor="isFeatured" className="cursor-pointer">
-                  Is Featured
+                <Label
+                  htmlFor="isFeatured"
+                  className="cursor-pointer font-semibold"
+                >
+                  Featured
                 </Label>
               </div>
             </div>
           </div>
 
-          <SheetFooter>
-            <Button type="submit">Save changes</Button>
-            <SheetClose asChild>
-              <Button variant="outline">Close</Button>
+          <SheetFooter className="gap-3 pt-6 border-t border-gray-600">
+            <SheetClose ref={sheetCloseRef} asChild>
+              <Button
+                variant="outline"
+                className="bg-transparent border-gray-600 text-gray-300 hover:bg-[#2d3139] hover:text-white"
+              >
+                Close
+              </Button>
             </SheetClose>
+            <Button
+              type="submit"
+              className="bg-[#fc5900] hover:bg-[#e04a00] text-white font-semibold transition-all duration-300 flex-1"
+            >
+              Save changes
+            </Button>
           </SheetFooter>
         </form>
       </SheetContent>
