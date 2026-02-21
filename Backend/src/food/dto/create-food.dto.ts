@@ -41,6 +41,9 @@ export class CreateFoodDto {
   @IsOptional()
   isFeatured?: boolean;
 
+  @IsOptional()
+  active?: boolean;
+
   @IsString({ message: 'image must be a string' })
   @IsUrl({}, { message: 'image must be a valid url' })
   image: string;

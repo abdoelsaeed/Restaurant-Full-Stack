@@ -13,12 +13,15 @@ import {
   Query,
   Req,
   HttpCode,
+  Patch,
 } from '@nestjs/common';
 import { FoodService } from './food.service';
 import { CreateFoodDto } from './dto/create-food.dto';
 import { Roles } from 'src/guard/user.decorator';
 import { FindFoodsQueryDto } from './dto/find-foods.query.dto';
 import { OptionalAuthGuard } from 'src/guard/OptionalAuthGuard.guard';
+import { AuthGuard } from 'src/guard/Auth.guard';
+import { UpdateFoodDto } from './dto/update-food.dto';
 
 @Controller('food')
 export class FoodController {
@@ -48,8 +51,18 @@ export class FoodController {
   }
 
   @HttpCode(204)
+  @Roles(['User', 'Admin'])
+  @UseGuards(AuthGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.foodService.remove(id);
+  }
+
+  @HttpCode(200)
+  @Roles(['User', 'Admin'])
+  @UseGuards(AuthGuard)
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateFoodDto: UpdateFoodDto) {
+    return this.foodService.update(id, updateFoodDto)
   }
 }

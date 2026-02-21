@@ -1,12 +1,12 @@
 /* eslint-disable prettier/prettier */
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { DashboardService } from './dashboard.service';
 import { AuthGuard } from 'src/guard/Auth.guard';
 import { Roles } from 'src/guard/user.decorator';
 
 @Controller('dashboard')
 export class DashboardController {
-  constructor(private readonly dashboardService: DashboardService) {}
+  constructor(private readonly dashboardService: DashboardService) { }
   @UseGuards(AuthGuard)
   @Roles(['Admin'])
   @Get('statistics-page')
@@ -26,6 +26,12 @@ export class DashboardController {
       to: toDate,
       groupBy,
     });
+  }
+  @UseGuards(AuthGuard)
+  @Roles(['Admin'])
+  @Post(':id/duplicate')
+  async duplicateFood(@Param('id') id: string) {
+    return this.dashboardService.duplicateFood(id)
   }
 
 

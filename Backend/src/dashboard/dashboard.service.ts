@@ -2,8 +2,9 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Model } from 'mongoose';
+import { Food } from 'src/food/interfaces/food.interface';
 import { Order } from 'src/orders/interfaces/order.interface';
 // ┌─────────────────────┐
 // │1) getSummary()✅     │
@@ -12,23 +13,24 @@ import { Order } from 'src/orders/interfaces/order.interface';
 // │4) getTopProducts()✅    │
 // │5) getPeakDays()✅      │
 // └─────────────────────┘
-type Filter = { 
+type Filter = {
     from?: Date;
     to?: Date;
     groupBy?: "daily" | "weekly" | "monthly";
-    limit?:10
+    limit?: 10
 }
 @Injectable()
 export class DashboardService {
-    constructor(@Inject('ORDER_MODEL') private readonly orderModel: Model<Order>){}
-    private async getSummary(filter: Filter){
+    constructor(@Inject('ORDER_MODEL') private readonly orderModel: Model<Order>,
+        @Inject('FOOD_MODEL') private readonly foodModel: Model<Food>) { }
+    private async getSummary(filter: Filter) {
         const match: Record<string, any> = {};
-        if(filter.from||filter.to){
-            match.createdAt={}
-            if(filter.from){
+        if (filter.from || filter.to) {
+            match.createdAt = {}
+            if (filter.from) {
                 match.createdAt.$gte = filter.from;
             }
-            if(filter.to){
+            if (filter.to) {
                 match.createdAt.$lte = filter.to;
             }
         }
@@ -66,14 +68,14 @@ export class DashboardService {
             totalOrders: 0,
             paidOrders: 0,
         };
-        const aov = summary.paidOrders > 0? summary.totalRevenue / summary.paidOrders : 0;
+        const aov = summary.paidOrders > 0 ? summary.totalRevenue / summary.paidOrders : 0;
         return {
             revenue: summary.totalRevenue,
             orders: summary.totalOrders,
             aov: Number(aov.toFixed(2)),
         };
     }
-    private async getSalesOverTime(filter:Filter) {
+    private async getSalesOverTime(filter: Filter) {
         const { from, to, groupBy = "daily" } = filter;
         const matchStage: Record<string, any> = {
             status: "paid",
@@ -182,7 +184,7 @@ export class DashboardService {
 
         const result = await this.orderModel.aggregate([
             { $match: matchStage },
-            
+
             { $unwind: "$items" },
 
             {
@@ -264,10 +266,10 @@ export class DashboardService {
             orders: item.orders,
         }));
     }
-    async DashboardStatisticsPage(query: Filter){
+    async DashboardStatisticsPage(query: Filter) {
         const { from, to, groupBy = "daily" } = query;
 
-        const filter:Filter = { from, to };
+        const filter: Filter = { from, to };
         const [
             summary,
             salesOverTime,
@@ -289,6 +291,29 @@ export class DashboardService {
             peakDays
         };
     }
-
+    async duplicateFood(id: string) {
+        
+        const food = await this.foodModel.findById(id);
+        if (!food) {
+            throw new NotFoundException('Food not found');
+        }
+        const duplicatedFood = await this.foodModel.create({
+            name: food.name + ' ' + 'copy',
+            price: food.price,
+            discount: food.discount,
+            ingredients: food.ingredients,
+            type: food.type,
+            finalPrice: food.finalPrice,
+            mealTimes: food.mealTimes,
+            image: food.image,
+        })
+        if (!duplicatedFood) {
+            throw new Error('Failed to duplicate food')
+        }
+        return {
+            message: 'Food duplicated successfully',
+            data: duplicatedFood
+        }
+    }
 
 }

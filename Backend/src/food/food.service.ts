@@ -13,6 +13,7 @@ import { CreateFoodDto } from './dto/create-food.dto';
 import { Model } from 'mongoose';
 import { Food } from './interfaces/food.interface';
 import { Wishlist } from 'src/wishlist/interface/wishlist.interface';
+import { UpdateFoodDto } from './dto/update-food.dto';
 
 @Injectable()
 export class FoodService {
@@ -70,44 +71,76 @@ export class FoodService {
       page = 1,
       q,
       isFeatured,
+      active,
       limit = 10,
     } = query;
-    const filter: any = { active: query.active || true };
-    if (type) {
-      filter.type = type;
+
+    const filter: any = {};
+
+
+    // تطبيق الفلاتر
+    if (active !== undefined) {
+      filter.active = active;
     }
+
+    if (isFeatured !== undefined) {
+      filter.isFeatured = Boolean(isFeatured);
+    }
+
+
+    if (type) filter.type = type;
     if (mealTime) filter.mealTimes = mealTime;
+
+    if (q) {
+      filter.name = { $regex: q, $options: 'i' };
+    }
+
+    // 🔹 تأمين sort
+    const allowedSortFields = ['price', 'createdAt'];
+    const sortField = allowedSortFields.includes(sortBy)
+      ? sortBy
+      : 'createdAt';
+
     const sort: any = {
-      [sortBy]: order === 'asc' ? 1 : -1,
+      [sortField]: order === 'asc' ? 1 : -1,
     };
-    if(isFeatured) filter.isFeatured = isFeatured;
-    const skip = (page - 1) * limit;
-    if (q) filter.name = { $regex: q, $options: 'i' };
+
+    const pageNumber = Number(page) || 1;
+    const limitNumber = Number(limit) || 10;
+    const skip = (pageNumber - 1) * limitNumber;
+
     const [foods, total] = await Promise.all([
-      this.foodModel.find(filter).sort(sort).skip(skip).limit(limit).lean(),
+      this.foodModel
+        .find(filter)
+        .sort(sort)
+        .skip(skip)
+        .limit(limitNumber)
+        .lean(),
+
       this.foodModel.countDocuments(filter),
     ]);
-    // 🟡 Guest → رجّع من غير Wishlist
+
     if (!userId) {
       return {
         status: 200,
         message: 'foods fetched successfully',
         meta: {
           total,
-          page,
-          limit,
-          pages: Math.ceil(total / limit),
+          page: pageNumber,
+          limit: limitNumber,
+          pages: Math.ceil(total / limitNumber),
         },
         data: foods,
       };
     }
 
-    // 🟢 Logged in → هات wishlist
     const wishlistedFoodIds = await this.wishlistModel
       .find({ user: userId })
       .distinct('food');
 
-    const wishlistSet = new Set(wishlistedFoodIds.map((id) => id.toString()));
+    const wishlistSet = new Set(
+      wishlistedFoodIds.map((id) => id.toString()),
+    );
 
     const foodsWithWishlist = foods.map((food) => ({
       ...food,
@@ -119,9 +152,9 @@ export class FoodService {
       message: 'foods fetched successfully',
       meta: {
         total,
-        page,
-        limit,
-        pages: Math.ceil(total / limit),
+        page: pageNumber,
+        limit: limitNumber,
+        pages: Math.ceil(total / limitNumber),
       },
       data: foodsWithWishlist,
     };
@@ -140,5 +173,15 @@ export class FoodService {
     const product = await this.foodModel.findByIdAndDelete(id);
     if (!product) throw new NotFoundException('Not found food with this id');
     return;
+  }
+  async update(id: string, updateFoodDto: UpdateFoodDto) {
+    const updatedFood = await this.foodModel.findByIdAndUpdate(id, updateFoodDto, { new: true });
+    if (!updatedFood) {
+      throw new NotFoundException('Not found food with this id');
+    }
+    return {
+      message: 'Food updated successfully',
+      data: updatedFood
+    }
   }
 }
