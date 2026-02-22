@@ -28,6 +28,7 @@ export function LoginForm() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // 🔐 Login عادي
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -36,8 +37,8 @@ export function LoginForm() {
       const res = await loginService(email, password);
       const role = res?.data?.role;
 
-      await new Promise((r) => setTimeout(r, 300));
       await mergeGuestCart();
+
       if (role === "Admin") {
         window.location.href = "/dashboard";
       } else {
@@ -45,6 +46,48 @@ export function LoginForm() {
       }
     } catch (err: any) {
       toast.error(err.message || "Login failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 👑 Demo Admin
+  const handleDemoAdmin = async () => {
+    setLoading(true);
+    try {
+      const res = await loginService("abdoelsaeed290@gmail.com", "12345678");
+      const role = res?.data?.role;
+
+      await mergeGuestCart();
+
+      if (role === "Admin") {
+        window.location.href = "/dashboard";
+      } else {
+        window.location.href = "/";
+      }
+    } catch (err: any) {
+      toast.error("Demo Admin login failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 👤 Demo User
+  const handleDemoUser = async () => {
+    setLoading(true);
+    try {
+      const res = await loginService("aabdoelsaeed290@gmail.com", "12345678");
+      const role = res?.data?.role;
+
+      await mergeGuestCart();
+
+      if (role === "Admin") {
+        window.location.href = "/dashboard";
+      } else {
+        window.location.href = "/";
+      }
+    } catch (err: any) {
+      toast.error("Demo User login failed");
     } finally {
       setLoading(false);
     }
@@ -71,6 +114,7 @@ export function LoginForm() {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </Field>
+
             <Field>
               <FieldLabel>Password</FieldLabel>
               <Input
@@ -80,10 +124,35 @@ export function LoginForm() {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </Field>
+
             <Field>
               <SubmitButton text={loading ? "Logging in..." : "Login"} />
             </Field>
-            <div className="flex ">
+
+            {/* 🔥 Demo Section */}
+            <div className="space-y-2">
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={handleDemoAdmin}
+                disabled={loading}
+              >
+                Login as Demo Admin
+              </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={handleDemoUser}
+                disabled={loading}
+              >
+                Login as Demo User
+              </Button>
+            </div>
+
+            <div className="flex">
               <Link href="/auth/forgot-password">
                 <Button
                   type="button"
@@ -93,9 +162,11 @@ export function LoginForm() {
                   Forgot password?
                 </Button>
               </Link>
-            </div>{" "}
+            </div>
+
             <FieldDescription className="text-center">
-              Don&apos;t have an account? <Link href="/auth/signup">Sign up</Link>
+              Don&apos;t have an account?{" "}
+              <Link href="/auth/signup">Sign up</Link>
             </FieldDescription>
           </FieldGroup>
         </form>
